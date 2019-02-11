@@ -10,10 +10,10 @@ class CountdownTimer extends Stream<CountdownTimer> {
   final StreamController<CountdownTimer> _controller;
 
   bool _paused = false;
-  Duration _duration;
+  Duration totalDuration;
   Timer _timer;
 
-  CountdownTimer(this._duration)
+  CountdownTimer(this.totalDuration)
       : _stopwatch = Stopwatch(),
         _controller = StreamController<CountdownTimer>.broadcast(sync: true) {
     _timer = new Timer.periodic(_ONE_SECOND, _tick);
@@ -26,9 +26,11 @@ class CountdownTimer extends Stream<CountdownTimer> {
 
   Duration get elapsed => _stopwatch.elapsed;
 
-  Duration get remaining => _duration - _stopwatch.elapsed;
+  Duration get remaining => totalDuration - _stopwatch.elapsed;
 
-  Duration get totalDuration => _duration;
+  String get remainingToString => _timeString(remaining);
+
+  String get totalDurationToString => _timeString(totalDuration);
 
   double get percentRemaining => remaining.inSeconds / totalDuration.inSeconds;
 
@@ -51,7 +53,11 @@ class CountdownTimer extends Stream<CountdownTimer> {
   }
 
   addTime(Duration duration) {
-    _duration += duration;
+    totalDuration += duration;
+  }
+
+  subtractTime(Duration duration) {
+    totalDuration -= duration;
   }
 
   _tick(Timer timer) {
@@ -62,6 +68,10 @@ class CountdownTimer extends Stream<CountdownTimer> {
       cancel();
     }
   }
+
+  String _timeString(Duration duration) {
+    return duration.toString().substring(2).split('.')[0];
+  }
 }
 
 class RestTimer extends StatefulWidget {
@@ -71,6 +81,22 @@ class RestTimer extends StatefulWidget {
 
 class _RestTimerState extends State<RestTimer> {
   CountdownTimer timer = CountdownTimer(Duration(minutes: 1));
+  bool paused = false;
+
+  _togglePause() {
+    timer.togglePause();
+    setState(() {
+      paused = !paused;
+    });
+  }
+
+  _restart() {
+    timer.cancel();
+    setState(() {
+      timer = CountdownTimer(Duration(minutes: 1));
+      paused = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,27 +109,51 @@ class _RestTimerState extends State<RestTimer> {
               builder: (context, AsyncSnapshot<CountdownTimer> snapshot) {
                 return CircularPercentIndicator(
                   radius: 200.0,
-                  lineWidth: 5.0,
+                  lineWidth: 7.0,
                   percent: snapshot.data.percentRemaining,
-                  center: new Text(snapshot.data.remaining.toString()),
+                  center: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                        snapshot.data.remainingToString,
+                        style: TextStyle(
+                            fontSize: 30, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Text(
+                        snapshot.data.totalDurationToString,
+                      ),
+                    ],
+                  ),
                   progressColor: Colors.green,
                 );
               }),
-          new RaisedButton(
-            onPressed: () {},
-            child: Text("Start"),
-          ),
-          new RaisedButton(
-            onPressed: timer == null ? null : timer.togglePause,
-            child: Text("Pause"),
-          ),
-          new RaisedButton(
-            onPressed: timer == null
-                ? null
-                : () {
-                    timer.addTime(Duration(seconds: 30));
-                  },
-            child: Text("Add 30 seconds"),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              RaisedButton(
+                onPressed: _restart,
+                child: Text("Restart"),
+              ),
+              RaisedButton(
+                onPressed: timer == null ? null : _togglePause,
+                child: Text(!paused ? "Pause" : "Unpause"),
+              ),
+              RaisedButton(
+                onPressed: () {
+                  timer.addTime(Duration(seconds: 30));
+                },
+                child: Text("+ 30s"),
+              ),
+              RaisedButton(
+                onPressed: () {
+                  timer.subtractTime(Duration(seconds: 30));
+                },
+                child: Text("- 30s"),
+              ),
+            ],
           ),
         ],
       ),
