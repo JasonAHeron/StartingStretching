@@ -47,21 +47,31 @@ class MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            StretchCard(
-              "Shoulder Extension",
-              "Beginner: As above, with palms facing down.\n\nIntermediate: Place your elbows on the object and bring the hands together as it you were praying.\n\nAdvanced: Rotate the palms facing upward. Holding a stick might be useful to help keep the hands from rotating.\n\nAlternatively, a dead hang from a bar in a chinup grip might be used.",
-            ),
-            StretchCard("Underarm Shoulder Stretch", "potato"),
-            StretchCard(
-              "Rear Hand Clasp",
-              "potato",
-            )
-          ],
-        ),
+      body: ListView.builder(
+        itemCount: stretchList.length,
+        itemBuilder: (context, index) {
+          final item = stretchList[index];
+          return Dismissible(
+            // Each Dismissible must contain a Key. Keys allow Flutter to
+            // uniquely identify Widgets.
+            key: Key(item.title),
+            // We also need to provide a function that tells our app
+            // what to do after an item has been swiped away.
+            onDismissed: (direction) {
+              // Remove the item from our data source.
+              setState(() {
+                stretchList.removeAt(index);
+              });
+
+              // Then show a snackbar!
+              Scaffold.of(context)
+                  .showSnackBar(SnackBar(content: Text("$item dismissed")));
+            },
+            // Show a red background as the item is swiped away
+            background: Container(color: Colors.red),
+            child: item,
+          );
+        },
       ),
     );
   }
