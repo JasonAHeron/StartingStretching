@@ -1,6 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
-import 'dart:async';
 
 class CountdownTimer extends Stream<CountdownTimer> {
   static const Duration _ONE_SECOND = Duration(seconds: 1);
@@ -75,13 +76,23 @@ class CountdownTimer extends Stream<CountdownTimer> {
 }
 
 class RestTimer extends StatefulWidget {
+  final Duration duration;
+
   @override
-  _RestTimerState createState() => _RestTimerState();
+  _RestTimerState createState() => _RestTimerState(this.duration);
+
+  RestTimer(this.duration);
 }
 
 class _RestTimerState extends State<RestTimer> {
-  CountdownTimer timer = CountdownTimer(Duration(minutes: 1));
+  CountdownTimer timer;
+  Duration duration;
+  var initialData;
   bool paused = false;
+
+  _RestTimerState(this.duration) {
+    timer = CountdownTimer(duration);
+  }
 
   _togglePause() {
     timer.togglePause();
@@ -93,7 +104,7 @@ class _RestTimerState extends State<RestTimer> {
   _restart() {
     timer.cancel();
     setState(() {
-      timer = CountdownTimer(Duration(minutes: 1));
+      timer = CountdownTimer(duration);
       paused = false;
     });
   }
@@ -106,7 +117,8 @@ class _RestTimerState extends State<RestTimer> {
         children: <Widget>[
           StreamBuilder(
               stream: timer,
-              builder: (context, AsyncSnapshot<CountdownTimer> snapshot) {
+              initialData: initialData,
+              builder: (context, snapshot) {
                 return CircularPercentIndicator(
                   radius: 200.0,
                   lineWidth: 7.0,
