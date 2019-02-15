@@ -34,11 +34,14 @@ class MyHomePageState extends State<MyHomePage> {
       "Shoulder Extension",
       "Beginner: As above, with palms facing down.\n\nIntermediate: Place your elbows on the object and bring the hands together as it you were praying.\n\nAdvanced: Rotate the palms facing upward. Holding a stick might be useful to help keep the hands from rotating.\n\nAlternatively, a dead hang from a bar in a chinup grip might be used.",
     ),
-    StretchCard("Underarm Shoulder Stretch", "potato"),
-    StretchCard(
-      "Rear Hand Clasp",
-      "potato",
-    )
+    StretchCard("Underarm Shoulder Stretch", ""),
+    StretchCard("Rear Hand Clasp", ""),
+    StretchCard("Full Squat", ""),
+    StretchCard("Standing Pike", ""),
+    StretchCard("Kneeling Lunge", ""),
+    StretchCard("Butterfly", ""),
+    StretchCard("Backbend", ""),
+    StretchCard("Lying Twist", ""),
   ];
 
   @override

@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:audioplayers/audio_cache.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
@@ -8,6 +10,8 @@ class CountdownTimer extends Stream<CountdownTimer> {
   static const _THRESHOLD_MS = 4;
 
   final Stopwatch _stopwatch;
+  final AudioPlayer _audioPlayer;
+  final AudioCache _audioCache;
   final StreamController<CountdownTimer> _controller;
 
   bool _paused = false;
@@ -16,6 +20,8 @@ class CountdownTimer extends Stream<CountdownTimer> {
 
   CountdownTimer(this.totalDuration)
       : _stopwatch = Stopwatch(),
+        _audioPlayer = AudioPlayer(),
+        _audioCache = AudioCache(),
         _controller = StreamController<CountdownTimer>.broadcast(sync: true) {
     _timer = new Timer.periodic(_ONE_SECOND, _tick);
     _stopwatch.start();
@@ -29,9 +35,9 @@ class CountdownTimer extends Stream<CountdownTimer> {
 
   Duration get remaining => totalDuration - _stopwatch.elapsed;
 
-  String get remainingToString => _timeString(remaining);
+  String get remainingToString => timeString(remaining);
 
-  String get totalDurationToString => _timeString(totalDuration);
+  String get totalDurationToString => timeString(totalDuration);
 
   double get percentRemaining => remaining.inSeconds / totalDuration.inSeconds;
 
@@ -58,7 +64,14 @@ class CountdownTimer extends Stream<CountdownTimer> {
   }
 
   subtractTime(Duration duration) {
-    totalDuration -= duration;
+    if (totalDuration - duration > Duration()) {
+      totalDuration -= duration;
+    }
+  }
+
+  _playAlarm() async {
+    AudioPlayer.logEnabled = true;
+    await _audioCache.play('alarm.mp3');
   }
 
   _tick(Timer timer) {
@@ -66,11 +79,12 @@ class CountdownTimer extends Stream<CountdownTimer> {
     _controller.add(this);
     // timers may have a 4ms resolution
     if (t.inMilliseconds < _THRESHOLD_MS) {
+      _playAlarm();
       cancel();
     }
   }
 
-  String _timeString(Duration duration) {
+  static String timeString(Duration duration) {
     return duration.toString().substring(2).split('.')[0];
   }
 }
@@ -87,7 +101,6 @@ class RestTimer extends StatefulWidget {
 class _RestTimerState extends State<RestTimer> {
   CountdownTimer timer;
   Duration duration;
-  var initialData;
   bool paused = false;
 
   _RestTimerState(this.duration) {
@@ -116,54 +129,71 @@ class _RestTimerState extends State<RestTimer> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           StreamBuilder(
-              stream: timer,
-              initialData: initialData,
-              builder: (context, snapshot) {
-                return CircularPercentIndicator(
-                  radius: 200.0,
-                  lineWidth: 7.0,
-                  percent: snapshot.data.percentRemaining,
-                  center: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Text(
-                        snapshot.data.remainingToString,
-                        style: TextStyle(
-                            fontSize: 30, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Text(
-                        snapshot.data.totalDurationToString,
-                      ),
-                    ],
-                  ),
-                  progressColor: Colors.green,
-                );
-              }),
+            stream: timer,
+            builder: (context, snapshot) {
+              return CircularPercentIndicator(
+                radius: 200.0,
+                lineWidth: 7.0,
+                percent:
+                    snapshot.data == null ? 1 : snapshot.data.percentRemaining,
+                center: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                      snapshot.data == null
+                          ? CountdownTimer.timeString(duration)
+                          : snapshot.data.remainingToString,
+                      style:
+                          TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Text(
+                      snapshot.data == null
+                          ? CountdownTimer.timeString(duration)
+                          : snapshot.data.totalDurationToString,
+                    ),
+                  ],
+                ),
+                progressColor: Colors.green,
+              );
+            },
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              RaisedButton(
+              MaterialButton(
+                color: Theme.of(context).buttonColor,
+                minWidth: 45,
+                padding: EdgeInsets.all(1),
+                child: Icon(Icons.restore),
                 onPressed: _restart,
-                child: Text("Restart"),
               ),
-              RaisedButton(
+              MaterialButton(
+                color: Theme.of(context).buttonColor,
+                minWidth: 45,
+                padding: EdgeInsets.all(1),
                 onPressed: timer == null ? null : _togglePause,
-                child: Text(!paused ? "Pause" : "Unpause"),
+                child: paused ? Icon(Icons.play_arrow) : Icon(Icons.pause),
               ),
-              RaisedButton(
+              MaterialButton(
+                color: Theme.of(context).buttonColor,
+                minWidth: 45,
+                padding: EdgeInsets.all(1),
                 onPressed: () {
                   timer.addTime(Duration(seconds: 30));
                 },
-                child: Text("+ 30s"),
+                child: Text("+30s"),
               ),
-              RaisedButton(
+              MaterialButton(
+                color: Theme.of(context).buttonColor,
+                minWidth: 45,
+                padding: EdgeInsets.all(1),
                 onPressed: () {
                   timer.subtractTime(Duration(seconds: 30));
                 },
-                child: Text("- 30s"),
+                child: Text("-30s"),
               ),
             ],
           ),
