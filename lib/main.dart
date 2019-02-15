@@ -4,15 +4,23 @@ import 'timer.dart';
 
 void main() => runApp(MyApp());
 
+const TIMER_PRESETS = [
+  {"title": '1:00', "duration": Duration(minutes: 1)},
+  {"title": '1:15', "duration": Duration(minutes: 1, seconds: 15)},
+  {"title": '1:30', "duration": Duration(minutes: 1, seconds: 30)},
+  {"title": '2:00', "duration": Duration(minutes: 2)},
+  {"title": '3:00', "duration": Duration(minutes: 3)},
+];
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Lift',
+      title: 'Starting Stretching',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.deepOrange,
       ),
-      home: MyHomePage(title: 'Lift'),
+      home: MyHomePage(title: 'Starting Stretching'),
     );
   }
 }
@@ -103,53 +111,38 @@ class StretchCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          ListTile(
-            leading: Icon(Icons.arrow_forward),
-            title: Text(title),
-          ),
-          Text(mainText),
-          ButtonTheme.bar(
-            child: ButtonBar(
-              children: <Widget>[
-                FlatButton(
-                  child: Text('1:00'),
-                  onPressed: () {
-                    _showTimer(context, title, Duration(minutes: 1));
-                  },
-                ),
-                FlatButton(
-                  child: Text('1:15'),
-                  onPressed: () {
-                    _showTimer(
-                        context, title, Duration(minutes: 1, seconds: 15));
-                  },
-                ),
-                FlatButton(
-                  child: Text('1:30'),
-                  onPressed: () {
-                    _showTimer(
-                        context, title, Duration(minutes: 1, seconds: 30));
-                  },
-                ),
-                FlatButton(
-                  child: Text('2:00'),
-                  onPressed: () {
-                    _showTimer(context, title, Duration(minutes: 2));
-                  },
-                ),
-                FlatButton(
-                  child: Text('3:00'),
-                  onPressed: () {
-                    _showTimer(context, title, Duration(minutes: 3));
-                  },
-                ),
-              ],
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                title,
+                style: TextStyle(fontSize: 20),
+                textAlign: TextAlign.start,
+              ),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: mainText.isEmpty ? Container() : Text(mainText),
+            ),
+            ButtonTheme.bar(
+              child: ButtonBar(
+                children: TIMER_PRESETS
+                    .map((timer) => FlatButton(
+                          child: Text(timer["title"]),
+                          onPressed: () {
+                            _showTimer(
+                                context, timer["title"], timer["duration"]);
+                          },
+                        ))
+                    .toList(),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
