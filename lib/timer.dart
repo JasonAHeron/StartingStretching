@@ -70,7 +70,6 @@ class CountdownTimer extends Stream<CountdownTimer> {
   }
 
   _playAlarm() async {
-    AudioPlayer.logEnabled = true;
     await _audioCache.play('alarm.mp3');
   }
 
