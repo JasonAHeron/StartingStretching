@@ -235,8 +235,7 @@ class StretchCard extends StatelessWidget {
                     .map((timer) => FlatButton(
                           child: Text(timer["title"]),
                           onPressed: () {
-                            _showTimer(
-                                context, timer["title"], timer["duration"]);
+                            _showTimer(context, title, timer["duration"]);
                           },
                         ))
                     .toList(),
