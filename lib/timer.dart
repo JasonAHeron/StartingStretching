@@ -77,16 +77,15 @@ class CountdownTimer extends Stream<CountdownTimer> {
 class RestTimer extends StatefulWidget {
   final Duration duration;
 
-  // Used to cleanly parse minute second time strings from durations.
-  static final timeStringExp = RegExp(r"(([1-9]+|0):[0-9]+)\.");
-
   @override
   _RestTimerState createState() => _RestTimerState(this.duration);
 
   RestTimer(this.duration);
 
   static String timeString(Duration duration) {
-    return timeStringExp.firstMatch(duration.toString()).group(1);
+    final secs = duration.inSeconds - 60 * duration.inMinutes;
+    final secsPadded = secs.toString().padLeft(2, '0');
+    return "${duration.inMinutes}:$secsPadded";
   }
 }
 
