@@ -161,7 +161,7 @@ class _RestTimerState extends State<RestTimer> {
                     ),
                   ],
                 ),
-                progressColor: Colors.green,
+                progressColor: Theme.of(context).accentColor,
               );
             },
           ),
