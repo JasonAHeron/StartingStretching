@@ -143,9 +143,8 @@ class MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    remainingStretches = EXERCISES.map((x) => x).toList();
+    remainingStretches = new List<Map<String, Object>>.from(EXERCISES);
   }
 
   @override
