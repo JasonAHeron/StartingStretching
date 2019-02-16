@@ -83,7 +83,7 @@ class RestTimer extends StatefulWidget {
   RestTimer(this.duration);
 
   static String timeString(Duration duration) {
-    final secs = duration.inSeconds - 60 * duration.inMinutes;
+    final secs = duration.inSeconds % 60;
     final secsPadded = secs.toString().padLeft(2, '0');
     return "${duration.inMinutes}:$secsPadded";
   }
