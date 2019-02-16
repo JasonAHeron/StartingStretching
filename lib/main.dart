@@ -5,12 +5,12 @@ import 'package:lift/exercise.dart';
 
 void main() => runApp(MyApp());
 
-const TIMER_PRESETS = [
-  {"title": '1:00', "duration": Duration(minutes: 1)},
-  {"title": '1:15', "duration": Duration(minutes: 1, seconds: 15)},
-  {"title": '1:30', "duration": Duration(minutes: 1, seconds: 30)},
-  {"title": '2:00', "duration": Duration(minutes: 2)},
-  {"title": '3:00', "duration": Duration(minutes: 3)},
+const List<Duration> TIMER_PRESETS = [
+  Duration(minutes: 1),
+  Duration(minutes: 1, seconds: 15),
+  Duration(minutes: 1, seconds: 30),
+  Duration(minutes: 2),
+  Duration(minutes: 3),
 ];
 
 class MyApp extends StatelessWidget {
@@ -38,12 +38,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class MyHomePageState extends State<MyHomePage> {
-  var remainingStretches;
+  List<Exercise> remainingStretches;
 
   @override
   void initState() {
     super.initState();
-    remainingStretches = new List<Map<String, Object>>.from(EXERCISES);
+    remainingStretches = new List<Exercise>.from(EXERCISES);
   }
 
   @override
@@ -57,7 +57,7 @@ class MyHomePageState extends State<MyHomePage> {
         itemBuilder: (context, index) {
           final exercise = remainingStretches[index];
           return Dismissible(
-            key: Key(exercise["title"]),
+            key: Key(exercise.title),
             direction: DismissDirection.startToEnd,
             onDismissed: (direction) {
               // Remove the item from our data source.
@@ -67,7 +67,7 @@ class MyHomePageState extends State<MyHomePage> {
 
               // Then show a snackbar!
               Scaffold.of(context).showSnackBar(
-                  SnackBar(content: Text("${exercise["title"]} completed!")));
+                  SnackBar(content: Text("${exercise.title} completed!")));
             },
             background: Container(
               color: Colors.green,
@@ -80,7 +80,7 @@ class MyHomePageState extends State<MyHomePage> {
                 ],
               ),
             ),
-            child: StretchCard(exercise["title"], ""),
+            child: StretchCard(exercise),
           );
         },
       ),
@@ -89,10 +89,9 @@ class MyHomePageState extends State<MyHomePage> {
 }
 
 class StretchCard extends StatelessWidget {
-  final String title;
-  final String mainText;
+  final Exercise exercise;
 
-  StretchCard(this.title, this.mainText);
+  StretchCard(this.exercise);
 
   _showTimer(BuildContext context, String name, Duration duration) {
     showDialog(
@@ -119,22 +118,23 @@ class StretchCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                title,
+                exercise.title,
                 style: TextStyle(fontSize: 20),
                 textAlign: TextAlign.start,
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: mainText.isEmpty ? Container() : Text(mainText),
+              padding: const EdgeInsets.all(8.0),
+              child: Text(exercise.progressions[Progression.BEGINNER]),
             ),
             ButtonTheme.bar(
               child: ButtonBar(
                 children: TIMER_PRESETS
-                    .map((timer) => FlatButton(
-                          child: Text(timer["title"]),
+                    .map((duration) => FlatButton(
+                          child: Text(
+                              "${duration.inMinutes}:${duration.inSeconds}"),
                           onPressed: () {
-                            _showTimer(context, title, timer["duration"]);
+                            _showTimer(context, exercise.title, duration);
                           },
                         ))
                     .toList(),
