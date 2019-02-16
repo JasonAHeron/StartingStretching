@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:audioplayers/audio_cache.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
@@ -10,18 +9,15 @@ class CountdownTimer extends Stream<CountdownTimer> {
   static const _THRESHOLD_MS = 4;
 
   final Stopwatch _stopwatch;
-  final AudioPlayer _audioPlayer;
-  final AudioCache _audioCache;
   final StreamController<CountdownTimer> _controller;
 
   bool _paused = false;
+  Function callBack;
   Duration totalDuration;
   Timer _timer;
 
-  CountdownTimer(this.totalDuration)
+  CountdownTimer(this.totalDuration, [this.callBack])
       : _stopwatch = Stopwatch(),
-        _audioPlayer = AudioPlayer(),
-        _audioCache = AudioCache(),
         _controller = StreamController<CountdownTimer>.broadcast(sync: true) {
     _timer = new Timer.periodic(_ONE_SECOND, _tick);
     _stopwatch.start();
@@ -34,10 +30,6 @@ class CountdownTimer extends Stream<CountdownTimer> {
   Duration get elapsed => _stopwatch.elapsed;
 
   Duration get remaining => totalDuration - _stopwatch.elapsed;
-
-  String get remainingToString => timeString(remaining);
-
-  String get totalDurationToString => timeString(totalDuration);
 
   double get percentRemaining => remaining.inSeconds / totalDuration.inSeconds;
 
@@ -69,41 +61,44 @@ class CountdownTimer extends Stream<CountdownTimer> {
     }
   }
 
-  _playAlarm() async {
-    await _audioCache.play('alarm.mp3');
-  }
-
   _tick(Timer timer) {
     var t = remaining;
     _controller.add(this);
     // timers may have a 4ms resolution
     if (t.inMilliseconds < _THRESHOLD_MS) {
-      _playAlarm();
+      if (this.callBack != null) {
+        this.callBack();
+      }
       cancel();
     }
-  }
-
-  static String timeString(Duration duration) {
-    return duration.toString().substring(2).split('.')[0];
   }
 }
 
 class RestTimer extends StatefulWidget {
   final Duration duration;
 
+  // Used to cleanly parse minute second time strings from durations.
+  static final timeStringExp = RegExp(r"(([1-9]+|0):[0-9]+)\.");
+
   @override
   _RestTimerState createState() => _RestTimerState(this.duration);
 
   RestTimer(this.duration);
+
+  static String timeString(Duration duration) {
+    return timeStringExp.firstMatch(duration.toString()).group(1);
+  }
 }
 
 class _RestTimerState extends State<RestTimer> {
+  final AudioCache _audioPlayer = AudioCache();
+  final Duration _duration;
+
   CountdownTimer timer;
-  Duration duration;
   bool paused = false;
 
-  _RestTimerState(this.duration) {
-    timer = CountdownTimer(duration);
+  _RestTimerState(this._duration) {
+    timer = CountdownTimer(_duration, _playAlarm);
   }
 
   @override
@@ -111,6 +106,10 @@ class _RestTimerState extends State<RestTimer> {
   void dispose() {
     timer.cancel();
     super.dispose();
+  }
+
+  _playAlarm() async {
+    await this._audioPlayer.play('alarm.mp3');
   }
 
   _togglePause() {
@@ -123,7 +122,7 @@ class _RestTimerState extends State<RestTimer> {
   _restart() {
     timer.cancel();
     setState(() {
-      timer = CountdownTimer(duration);
+      timer = CountdownTimer(_duration, _playAlarm);
       paused = false;
     });
   }
@@ -136,7 +135,8 @@ class _RestTimerState extends State<RestTimer> {
         children: <Widget>[
           StreamBuilder(
             stream: timer,
-            builder: (context, snapshot) {
+            builder:
+                (BuildContext context, AsyncSnapshot<CountdownTimer> snapshot) {
               return CircularPercentIndicator(
                 radius: 200.0,
                 lineWidth: 7.0,
@@ -147,8 +147,8 @@ class _RestTimerState extends State<RestTimer> {
                   children: <Widget>[
                     Text(
                       snapshot.data == null
-                          ? CountdownTimer.timeString(duration)
-                          : snapshot.data.remainingToString,
+                          ? RestTimer.timeString(_duration)
+                          : RestTimer.timeString(snapshot.data.remaining),
                       style:
                           TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                     ),
@@ -157,8 +157,8 @@ class _RestTimerState extends State<RestTimer> {
                     ),
                     Text(
                       snapshot.data == null
-                          ? CountdownTimer.timeString(duration)
-                          : snapshot.data.totalDurationToString,
+                          ? RestTimer.timeString(_duration)
+                          : RestTimer.timeString(snapshot.data.remaining),
                     ),
                   ],
                 ),

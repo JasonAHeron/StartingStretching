@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:lift/exercise.dart';
 
 import 'timer.dart';
-import 'package:lift/exercise.dart';
 
 void main() => runApp(MyApp());
 
@@ -131,8 +131,7 @@ class StretchCard extends StatelessWidget {
               child: ButtonBar(
                 children: TIMER_PRESETS
                     .map((duration) => FlatButton(
-                          child: Text(
-                              "${duration.inMinutes}:${duration.inSeconds}"),
+                          child: Text(RestTimer.timeString(duration)),
                           onPressed: () {
                             _showTimer(context, exercise.title, duration);
                           },
