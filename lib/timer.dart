@@ -107,6 +107,13 @@ class _RestTimerState extends State<RestTimer> {
     timer = CountdownTimer(duration);
   }
 
+  @override
+  @mustCallSuper
+  void dispose() {
+    timer.cancel();
+    super.dispose();
+  }
+
   _togglePause() {
     timer.togglePause();
     setState(() {
