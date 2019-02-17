@@ -25,7 +25,7 @@ const EXERCISES = [
     Progression.INTERMEDIATE:
         "Use a stick or resistance band to keep arms narrower than shoulder width.",
     Progression.ADVANCED:
-        " Do this while hanging from a bar. Also known as a German Hang",
+        "Do this while hanging from a bar. Also known as a German Hang",
   }),
   Exercise(title: "Rear Hand Clasp", progressions: {
     Progression.BEGINNER: "Use a towel or strap to bring the hands together",

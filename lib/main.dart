@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Starting Stretching',
       theme: ThemeData(
-        primarySwatch: Colors.deepOrange,
+        primarySwatch: Colors.orange,
       ),
       home: MyHomePage(title: 'Starting Stretching'),
     );
@@ -111,21 +111,27 @@ class StretchCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(12.0),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 exercise.title,
-                style: TextStyle(fontSize: 20),
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Theme.of(context).accentColor,
+                ),
                 textAlign: TextAlign.start,
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(exercise.progressions[Progression.BEGINNER]),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Description(Progression.BEGINNER, exercise.progressions),
+                Description(Progression.INTERMEDIATE, exercise.progressions),
+                Description(Progression.ADVANCED, exercise.progressions),
+              ],
             ),
             ButtonTheme.bar(
               child: ButtonBar(
@@ -141,6 +147,45 @@ class StretchCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class Description extends StatelessWidget {
+  final Progression progression;
+  final Map<Progression, String> progressions;
+
+  const Description(this.progression, this.progressions);
+
+  String _title() {
+    switch (progression) {
+      case Progression.ADVANCED:
+        return "advanced";
+      case Progression.BEGINNER:
+        return "beginner";
+      case Progression.INTERMEDIATE:
+        return "intermediate";
+      default:
+        throw Exception();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            _title().toUpperCase(),
+            textAlign: TextAlign.start,
+            style: TextStyle(color: Colors.blueGrey),
+          ),
+          Text(this.progressions[progression]),
+        ],
       ),
     );
   }
