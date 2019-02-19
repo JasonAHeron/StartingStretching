@@ -52,37 +52,59 @@ class MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: ListView.builder(
-        itemCount: remainingStretches.length,
-        itemBuilder: (context, index) {
-          final exercise = remainingStretches[index];
-          return Dismissible(
-            key: Key(exercise.title),
-            direction: DismissDirection.startToEnd,
-            onDismissed: (direction) {
-              // Remove the item from our data source.
-              setState(() {
-                remainingStretches.removeAt(index);
-              });
+      body: remainingStretches.isEmpty
+          ? WorkoutComplete()
+          : ListView.builder(
+              itemCount: remainingStretches.length,
+              itemBuilder: (context, index) {
+                final exercise = remainingStretches[index];
+                return Dismissible(
+                  key: Key(exercise.title),
+                  direction: DismissDirection.startToEnd,
+                  onDismissed: (direction) {
+                    // Remove the item from our data source.
+                    setState(() {
+                      remainingStretches.removeAt(index);
+                    });
 
-              // Then show a snackbar!
-              Scaffold.of(context).showSnackBar(
-                  SnackBar(content: Text("${exercise.title} completed!")));
-            },
-            background: Container(
-              color: Colors.green,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  ListTile(
-                    leading: Icon(Icons.check, color: Colors.white, size: 80),
+                    // Then show a snackbar!
+                    Scaffold.of(context).showSnackBar(SnackBar(
+                        content: Text("${exercise.title} completed!")));
+                  },
+                  background: Container(
+                    color: Colors.green,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        ListTile(
+                          leading:
+                              Icon(Icons.check, color: Colors.white, size: 80),
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
+                  child: StretchCard(exercise),
+                );
+              },
             ),
-            child: StretchCard(exercise),
-          );
-        },
+    );
+  }
+}
+
+class WorkoutComplete extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Icon(
+            Icons.thumb_up,
+            size: 80,
+            color: Theme.of(context).accentColor,
+          ),
+          Text("Great job for completing the workout!"),
+        ],
       ),
     );
   }
