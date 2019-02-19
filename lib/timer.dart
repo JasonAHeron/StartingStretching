@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:audioplayers/audio_cache.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
@@ -90,25 +91,33 @@ class RestTimer extends StatefulWidget {
 }
 
 class _RestTimerState extends State<RestTimer> {
-  final AudioCache _audioPlayer = AudioCache();
   final Duration _duration;
 
+  AudioCache _audioCache;
+  AudioPlayer _audioPlayer;
   CountdownTimer timer;
   bool paused = false;
 
   _RestTimerState(this._duration) {
     timer = CountdownTimer(_duration, _playAlarm);
+    _audioCache = AudioCache();
+    _audioCache.load('alarm.mp3');
   }
 
   @override
   @mustCallSuper
   void dispose() {
     timer.cancel();
+    _cancelAlarm();
     super.dispose();
   }
 
+  _cancelAlarm() async {
+    await _audioPlayer.stop();
+  }
+
   _playAlarm() async {
-    await this._audioPlayer.play('alarm.mp3');
+    _audioPlayer = await _audioCache.loop('alarm.mp3');
   }
 
   _togglePause() {
@@ -157,7 +166,7 @@ class _RestTimerState extends State<RestTimer> {
                     Text(
                       snapshot.data == null
                           ? RestTimer.timeString(_duration)
-                          : RestTimer.timeString(snapshot.data.remaining),
+                          : RestTimer.timeString(snapshot.data.totalDuration),
                     ),
                   ],
                 ),
